@@ -7,12 +7,12 @@ api = Api(app)
 
 
 @app.route("/")
-def hello_world():
+def hello_world() -> str:
     return "<h1>Hello, World!</h1>"
 
 
 class User(Resource):
-    def get(self):
+    def get(self) -> str:
         return "hello world"
 
 
