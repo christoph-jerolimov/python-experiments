@@ -2,7 +2,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 
 class MyHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
+    def do_GET(self) -> None:
         if self.path == "/":
             self.send_response(200)
         else:
