@@ -9,17 +9,21 @@ movies = [
     ("Monty Python's Life of Brian", 1979, 8.0),
 ]
 
+
 @app.get("/")
 def home():
     return "hello world\n"
+
 
 @app.get("/movies")
 def get_all_movies():
     return movies
 
+
 @app.get("/movies/{index}")
 def get_movie_by_index(index: int):
     return movies[index]
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

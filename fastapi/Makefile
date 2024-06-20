@@ -13,5 +13,11 @@ dev2:
 prod2:
 	python -m fastapi_cli prod
 
+lint:
+	python -m ruff check
+
+format:
+	python -m ruff format
+
 typecheck:
 	python -m mypy .
