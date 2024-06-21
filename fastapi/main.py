@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi_cli.cli import main
+from typing import Any
 
 app = FastAPI()
 
@@ -11,17 +12,17 @@ movies = [
 
 
 @app.get("/")
-def home():
+def home() -> str:
     return "hello world\n"
 
 
 @app.get("/movies")
-def get_all_movies():
+def get_all_movies() -> list[Any]:
     return movies
 
 
 @app.get("/movies/{index}")
-def get_movie_by_index(index: int):
+def get_movie_by_index(index: int) -> Any:
     return movies[index]
 
 
