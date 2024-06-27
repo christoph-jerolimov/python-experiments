@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Depends, status
+from fastapi import FastAPI, Depends, status, Request
 from fastapi.responses import JSONResponse
 from fastapi_cli.cli import main
 from contextlib import asynccontextmanager
 from sqlmodel import Session, select
+from sqlalchemy.exc import NoResultFound
 from typing import AsyncIterator, Iterable
 from db import init_db, get_session, Todo
 
@@ -34,25 +35,17 @@ def get_todos(session: Session = Depends(get_session)) -> Iterable[Todo]:
     return session.exec(statement).all()
 
 
-@app.get("/todos/{todo_id}", response_model=Todo)
-def get_todo_by_todo_id(todo_id: int, session: Session = Depends(get_session)) -> Todo | JSONResponse:
-    todo = session.get(Todo, todo_id)
-    if not todo:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND, content={"message": "Todo not found"}
-        )
+@app.get("/todos/{todo_id}")
+def get_todo_by_todo_id(todo_id: int, session: Session = Depends(get_session)) -> Todo:
+    todo = session.get_one(Todo, todo_id)
     return todo
 
 
-@app.put("/todos/{todo_id}", response_model=Todo)
+@app.put("/todos/{todo_id}")
 def update_todo_by_todo_id(
     todo_id: int, updateTodo: Todo, session: Session = Depends(get_session)
-) -> Todo | JSONResponse:
-    todo = session.get(Todo, todo_id)
-    if not todo:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND, content={"message": "Todo not found"}
-        )
+) -> Todo:
+    todo = session.get_one(Todo, todo_id)
     if name := updateTodo.name:
         todo.name = name
     if done := updateTodo.done:
@@ -67,15 +60,22 @@ def delete_todo_by_todo_id(
     todo_id: int, session: Session = Depends(get_session)
 ) -> JSONResponse:
     # or how can we run a delete query directly?
-    todo = session.get(Todo, todo_id)
-    if not todo:
-        return JSONResponse(
-            status_code=status.HTTP_404_NOT_FOUND, content={"message": "Todo not found"}
-        )
+    todo = session.get_one(Todo, todo_id)
     session.delete(todo)
     session.commit()
     return JSONResponse(
         status_code=status.HTTP_202_ACCEPTED, content={"message": "Todo deleted"}
+    )
+
+
+@app.exception_handler(NoResultFound)
+async def no_result_found_exception_handler(request: Request, exception: NoResultFound):
+    return JSONResponse(
+        status_code=404,
+        content={
+            "message": f"Resource not found: {exception}",
+            "path": request.url.path,
+        },
     )
 
 
